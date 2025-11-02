@@ -142,8 +142,24 @@ end = datetime.now()
 start = datetime(end.year -20, end.month, end.day)
 
 # Download data
+# google_data = yf.download(stock, start=start, end=end)
+# google_data.columns = ['_'.join(col) if isinstance(col, tuple) else col for col in google_data.columns]
+
+# Download data safely
 google_data = yf.download(stock, start=start, end=end)
+
+# ✅ FIX 1: Handle missing or empty data
+if google_data.empty:
+    st.error("❌ No data found for this stock symbol. Please check the symbol and try again.")
+    st.stop()
+
+# ✅ FIX 2: Fill missing values (if any)
+google_data = google_data.fillna(method='ffill').dropna()
+
+# ✅ Keep this line (you had it before)
 google_data.columns = ['_'.join(col) if isinstance(col, tuple) else col for col in google_data.columns]
+
+
 
 # Find close column
 close_col = None
@@ -259,6 +275,7 @@ plt.ylabel("Price")
 plt.title(f"{stock} - 1 Year Future Price Forecast")
 plt.legend()
 st.pyplot(fig2)
+
 
 
 
